@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -67,26 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d("URL", url.toString());
 
-            try {
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-                try {
-                    InputStream in = urlConnection.getInputStream();
-
-                    Scanner scanner = new Scanner(in);
-                    scanner.useDelimiter("\\A");
-
-                    boolean hasInput = scanner.hasNext();
-                    if (hasInput) {
-                        return scanner.next();
-                    } else {
-                        return null;
-                    }
-                } catch (IOException e) {
-                    return null;
-                } finally {
-                    urlConnection.disconnect();
-                }
+            try
+            {
+                return NetworkUtilities.getResponseFromHttpUrl(url);
             }
             catch (IOException e)
             {
