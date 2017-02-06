@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
+import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public class FetchMovieDataTask extends AsyncTask<String, Void, String>
+    public class FetchMovieDataTask extends AsyncTask<String, Void, Movie>
     {
         @Override
         protected void onPreExecute() {
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Movie doInBackground(String... params) {
 
             if (params.length == 0)
             {
@@ -70,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
 
             try
             {
-                return NetworkUtilities.getResponseFromHttpUrl(url);
+                //eturn NetworkUtilities.getResponseFromHttpUrl(url);
+                String movieJson = NetworkUtilities.getResponseFromHttpUrl(url);
+                return TheMovieDbJsonUtilities.getMovieFromJson(movieJson);
             }
             catch (IOException e)
             {
@@ -79,10 +82,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            if (s != null)
+        protected void onPostExecute(Movie movie) {
+            if (movie != null)
             {
-                mTextView.setText(s);
+                mTextView.setText(movie.toString());
             }
             else
             {
