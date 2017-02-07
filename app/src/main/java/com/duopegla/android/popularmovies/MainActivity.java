@@ -35,12 +35,15 @@ public class MainActivity extends AppCompatActivity {
 
         mTextView = (TextView) findViewById(R.id.tv_movie_test);
         String apiKey = getResources().getString(R.string.themoviedb_api_key);
-        String request = "https://api.themoviedb.org/3/movie/550?api_key=" + apiKey;
+        //String request = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey;
+
+        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.MOST_POPULAR);
+
         new FetchMovieDataTask().execute(request);
 
     }
 
-    public class FetchMovieDataTask extends AsyncTask<String, Void, Movie>
+    public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
         @Override
         protected void onPreExecute() {
@@ -48,32 +51,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Movie doInBackground(String... params) {
+        protected Movie[] doInBackground(URL... params) {
 
             if (params.length == 0)
             {
                 return null;
             }
 
-            Uri builtUri = Uri.parse(params[0]).buildUpon().build();
-            URL url = null;
+//            Uri builtUri = Uri.parse(params[0]).buildUpon().build();
+//            URL url = null;
+//            try
+//            {
+//                url = new URL(builtUri.toString());
+//            }
+//            catch (MalformedURLException e)
+//            {
+//                e.printStackTrace();
+//                return null;
+//            }
+
+            //Log.d("URL", url.toString());
+
             try
             {
-                url = new URL(builtUri.toString());
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-                return null;
-            }
-
-            Log.d("URL", url.toString());
-
-            try
-            {
-                //eturn NetworkUtilities.getResponseFromHttpUrl(url);
-                String movieJson = NetworkUtilities.getResponseFromHttpUrl(url);
-                return TheMovieDbJsonUtilities.getMovieFromJson(movieJson);
+                //return NetworkUtilities.getResponseFromHttpUrl(url);
+                String moviesJson = NetworkUtilities.getResponseFromHttpUrl(params[0]);
+                return TheMovieDbJsonUtilities.getMoviesFromJson(moviesJson);
             }
             catch (IOException e)
             {
@@ -82,10 +85,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Movie movie) {
-            if (movie != null)
+        protected void onPostExecute(Movie movies[]) {
+            if (movies != null)
             {
-                mTextView.setText(movie.toString());
+                //mTextView.setText(movies.toString());
+                StringBuilder resultStringBuilder = new StringBuilder();
+
+                for (int i = 0; i < movies.length; i++)
+                {
+                    resultStringBuilder.append(movies[i].toString()).append("\n\n\n");
+                }
+
+                mTextView.setText(resultStringBuilder.toString());
+
+                Log.d("LOG", "Received result for " + movies.length + " movies.");
             }
             else
             {
