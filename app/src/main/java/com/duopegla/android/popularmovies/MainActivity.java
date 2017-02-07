@@ -5,7 +5,12 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
@@ -23,31 +28,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView mImageView;
     private TextView mTextView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d("KEY", getResources().getString(R.string.themoviedb_api_key));
-
-        mImageView = (ImageView) findViewById(R.id.iv_image_test);
-        Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(mImageView);
-
-        mTextView = (TextView) findViewById(R.id.tv_movie_test);
-        String apiKey = getResources().getString(R.string.themoviedb_api_key);
-        //String request = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey;
-
-        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.MOST_POPULAR);
-
-        new FetchMovieDataTask().execute(request);
-
-    }
+    private ProgressBar mLoadingIndicator;
 
     public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -58,23 +47,8 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
-//            Uri builtUri = Uri.parse(params[0]).buildUpon().build();
-//            URL url = null;
-//            try
-//            {
-//                url = new URL(builtUri.toString());
-//            }
-//            catch (MalformedURLException e)
-//            {
-//                e.printStackTrace();
-//                return null;
-//            }
-
-            //Log.d("URL", url.toString());
-
             try
             {
-                //return NetworkUtilities.getResponseFromHttpUrl(url);
                 String moviesJson = NetworkUtilities.getResponseFromHttpUrl(params[0]);
                 return TheMovieDbJsonUtilities.getMoviesFromJson(moviesJson);
             }
@@ -86,9 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Movie movies[]) {
+
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+
             if (movies != null)
             {
-                //mTextView.setText(movies.toString());
                 StringBuilder resultStringBuilder = new StringBuilder();
 
                 for (int i = 0; i < movies.length; i++)
@@ -105,5 +81,76 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("ERROR", "Returned null result");
             }
         }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d("KEY", getResources().getString(R.string.themoviedb_api_key));
+
+        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+
+        mImageView = (ImageView) findViewById(R.id.iv_image_test);
+        Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(mImageView);
+
+        mTextView = (TextView) findViewById(R.id.tv_movie_test);
+
+        LoadMostPopularMovies();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        int selectedId = item.getItemId();
+
+        if (selectedId == R.id.action_refresh)
+        {
+            return true;
+        }
+
+        if (selectedId == R.id.action_sort_most_popular)
+        {
+            mTextView.setText("");
+            LoadMostPopularMovies();
+
+            return true;
+        }
+
+        if (selectedId == R.id.action_sort_top_rated)
+        {
+            mTextView.setText("");
+            LoadTopRatedMovies();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void LoadMostPopularMovies()
+    {
+        String apiKey = getResources().getString(R.string.themoviedb_api_key);
+
+        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.MOST_POPULAR);
+
+        new FetchMovieDataTask().execute(request);
+    }
+
+    private void LoadTopRatedMovies()
+    {
+        String apiKey = getResources().getString(R.string.themoviedb_api_key);
+
+        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.TOP_RATED);
+
+        new FetchMovieDataTask().execute(request);
     }
 }
