@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextView;
     private ProgressBar mLoadingIndicator;
 
+    private NetworkUtilities.MovieResultSort movieResultSortMethod;
+
     public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
         @Override
@@ -74,6 +76,9 @@ public class MainActivity extends AppCompatActivity {
 
                 mTextView.setText(resultStringBuilder.toString());
 
+                Log.d("POSTER", NetworkUtilities.buildPosterRequestUrl(movies[0].getPosterPath()).toString());
+                Picasso.with(getBaseContext()).load(NetworkUtilities.buildPosterRequestUrl(movies[0].getPosterPath()).toString()).into(mImageView);
+
                 Log.d("LOG", "Received result for " + movies.length + " movies.");
             }
             else
@@ -92,11 +97,12 @@ public class MainActivity extends AppCompatActivity {
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         mImageView = (ImageView) findViewById(R.id.iv_image_test);
-        Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(mImageView);
+        //Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(mImageView);
 
         mTextView = (TextView) findViewById(R.id.tv_movie_test);
 
-        LoadMostPopularMovies();
+        movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
+        LoadMovieData(movieResultSortMethod);
     }
 
     @Override
@@ -114,13 +120,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (selectedId == R.id.action_refresh)
         {
+            mTextView.setText("");
+            LoadMovieData(movieResultSortMethod);
+
             return true;
         }
 
         if (selectedId == R.id.action_sort_most_popular)
         {
             mTextView.setText("");
-            LoadMostPopularMovies();
+            movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
+            LoadMovieData(movieResultSortMethod);
 
             return true;
         }
@@ -128,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
         if (selectedId == R.id.action_sort_top_rated)
         {
             mTextView.setText("");
-            LoadTopRatedMovies();
+            movieResultSortMethod = NetworkUtilities.MovieResultSort.TOP_RATED;
+            LoadMovieData(movieResultSortMethod);
 
             return true;
         }
@@ -136,20 +147,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void LoadMostPopularMovies()
+    private void LoadMovieData(NetworkUtilities.MovieResultSort sortBy)
     {
         String apiKey = getResources().getString(R.string.themoviedb_api_key);
 
-        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.MOST_POPULAR);
-
-        new FetchMovieDataTask().execute(request);
-    }
-
-    private void LoadTopRatedMovies()
-    {
-        String apiKey = getResources().getString(R.string.themoviedb_api_key);
-
-        URL request = NetworkUtilities.buildRequestUrl(apiKey, NetworkUtilities.MovieResultSort.TOP_RATED);
+        URL request = NetworkUtilities.buildRequestUrl(apiKey, sortBy);
 
         new FetchMovieDataTask().execute(request);
     }

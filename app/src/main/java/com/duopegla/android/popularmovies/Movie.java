@@ -14,7 +14,6 @@ public class Movie
     private float userRating;
     private Calendar releaseDate;
 
-
     public Movie(String title, String posterPath, String synopsis, float userRating, Calendar releaseDate)
     {
         this.originalTitle = title;
@@ -29,5 +28,10 @@ public class Movie
         StringBuilder stringBuilder = new StringBuilder(originalTitle.length() + 7);
         stringBuilder.append(originalTitle).append(" (").append(releaseDate.get(Calendar.YEAR)).append(")");
         return stringBuilder.toString();
+    }
+
+    public String getPosterPath()
+    {
+        return this.posterPath;
     }
 }

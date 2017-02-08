@@ -27,11 +27,15 @@ public final class NetworkUtilities
     private static final String TMD_AUTHORITY = "api.themoviedb.org";
     private static final String TMD_API_VERSION = "3";
 
-    //private static final String TMD_API_URL = "https://api.themoviedb.org/3/";
     private static final String TMD_API_CATEGORY = "movie";
     private static final String TMD_MOST_POPULAR = "popular";
     private static final String TMD_TOP_RATED = "top_rated";
     private static final String TMD_API_KEY_PARAM = "api_key";
+
+    private static final String TMD_POSTER_AUTHORITY = "image.tmdb.org";
+    private static final String TMD_POSTER_PATH = "t/p";
+
+    private static final String TMD_POSTER_WIDTH = "w500"; // can be: "w92", "w154", "w185", "w342", "w500", "w780", or "original"
 
     private static final String format = "json";
 
@@ -54,6 +58,29 @@ public final class NetworkUtilities
 
         uriBuilder.appendQueryParameter(TMD_API_KEY_PARAM, apiKey);
         uriBuilder.build();
+
+        try
+        {
+            URL builtUrl = new URL(uriBuilder.toString());
+            return builtUrl;
+        }
+        catch (MalformedURLException e)
+        {
+            Log.d(TAG, "Unable to build requested URL " + uriBuilder.toString());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static URL buildPosterRequestUrl(String relativePath)
+    {
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme(SCHEME)
+                .authority(TMD_POSTER_AUTHORITY)
+                .appendEncodedPath(TMD_POSTER_PATH)
+                .appendPath(TMD_POSTER_WIDTH)
+                .appendEncodedPath(relativePath).build();
 
         try
         {
