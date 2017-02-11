@@ -1,36 +1,37 @@
 package com.duopegla.android.popularmovies;
 
-import android.net.Uri;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Scanner;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
 
-    private ImageView mImageView;
-    private TextView mTextView;
+    private RecyclerView mRecyclerView;
+    private MovieAdapter mMovieAdapter;
+    private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
 
     private NetworkUtilities.MovieResultSort movieResultSortMethod;
+
+    public final int NUMBER_OF_COLUMNS = 2;
 
     public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
@@ -67,23 +68,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (movies != null)
             {
-                StringBuilder resultStringBuilder = new StringBuilder();
-
-                for (int i = 0; i < movies.length; i++)
-                {
-                    resultStringBuilder.append(movies[i].toString()).append("\n\n\n");
-                }
-
-                mTextView.setText(resultStringBuilder.toString());
-
-                Log.d("POSTER", NetworkUtilities.buildPosterRequestUrl(movies[0].getPosterPath()).toString());
-                Picasso.with(getBaseContext()).load(NetworkUtilities.buildPosterRequestUrl(movies[0].getPosterPath()).toString()).into(mImageView);
-
-                Log.d("LOG", "Received result for " + movies.length + " movies.");
+                showMovieDataView();
+                mMovieAdapter.setMovieData(movies);
             }
             else
             {
-                Log.d("ERROR", "Returned null result");
+                showErrorMessage();
             }
         }
     }
@@ -92,17 +82,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("KEY", getResources().getString(R.string.themoviedb_api_key));
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies);
+
+        GridLayoutManager layoutManager = new GridLayoutManager(this, NUMBER_OF_COLUMNS, GridLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+
+        mRecyclerView.setHasFixedSize(true);
+
+        mMovieAdapter = new MovieAdapter(this);
+        mRecyclerView.setAdapter(mMovieAdapter);
+
+        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        mImageView = (ImageView) findViewById(R.id.iv_image_test);
-        //Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(mImageView);
-
-        mTextView = (TextView) findViewById(R.id.tv_movie_test);
-
         movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
-        LoadMovieData(movieResultSortMethod);
+        loadMovieData(movieResultSortMethod);
     }
 
     @Override
@@ -120,26 +117,26 @@ public class MainActivity extends AppCompatActivity {
 
         if (selectedId == R.id.action_refresh)
         {
-            mTextView.setText("");
-            LoadMovieData(movieResultSortMethod);
+            mMovieAdapter.setMovieData(null);
+            loadMovieData(movieResultSortMethod);
 
             return true;
         }
 
         if (selectedId == R.id.action_sort_most_popular)
         {
-            mTextView.setText("");
+            mMovieAdapter.setMovieData(null);
             movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
-            LoadMovieData(movieResultSortMethod);
+            loadMovieData(movieResultSortMethod);
 
             return true;
         }
 
         if (selectedId == R.id.action_sort_top_rated)
         {
-            mTextView.setText("");
+            mMovieAdapter.setMovieData(null);
             movieResultSortMethod = NetworkUtilities.MovieResultSort.TOP_RATED;
-            LoadMovieData(movieResultSortMethod);
+            loadMovieData(movieResultSortMethod);
 
             return true;
         }
@@ -147,12 +144,34 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void LoadMovieData(NetworkUtilities.MovieResultSort sortBy)
+    @Override
+    public void onClick(Movie movie) {
+        //Toast.makeText(this, "Clicked on movie " + movie.toString(), Toast.LENGTH_LONG).show();
+        Context context = this;
+        Class destinationClass = DetailActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra("movie", movie);
+        startActivity(intentToStartDetailActivity);
+    }
+
+    private void loadMovieData(NetworkUtilities.MovieResultSort sortBy)
     {
+        showMovieDataView();
+
         String apiKey = getResources().getString(R.string.themoviedb_api_key);
-
         URL request = NetworkUtilities.buildRequestUrl(apiKey, sortBy);
-
         new FetchMovieDataTask().execute(request);
+    }
+
+    private void showMovieDataView()
+    {
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showErrorMessage()
+    {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 }
