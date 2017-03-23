@@ -23,6 +23,7 @@ public final class TheMovieDbJsonUtilities {
 
     private static final String TMD_MOVIE_RESULTS = "results";
 
+    private static final String TMD_ID = "id";
     private static final String TMD_TITLE = "original_title";
     private static final String TMD_POSTER_PATH = "poster_path";
     private static final String TMD_SYNOPSIS = "overview";
@@ -33,6 +34,7 @@ public final class TheMovieDbJsonUtilities {
     {
         try
         {
+            int movieId = movieJson.getInt(TMD_ID);
             String movieTitle = movieJson.getString(TMD_TITLE);
             String posterPath = movieJson.getString(TMD_POSTER_PATH);
             String synopsis = movieJson.getString(TMD_SYNOPSIS);
@@ -50,7 +52,7 @@ public final class TheMovieDbJsonUtilities {
                 e.printStackTrace();
             }
 
-            return new Movie(movieTitle, posterPath, synopsis, userRating, releaseDate);
+            return new Movie(movieId, movieTitle, posterPath, synopsis, userRating, releaseDate);
 
         }
         catch (JSONException e)

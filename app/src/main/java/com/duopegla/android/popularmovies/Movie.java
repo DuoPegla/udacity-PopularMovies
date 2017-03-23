@@ -12,6 +12,7 @@ import java.util.Calendar;
 
 public class Movie implements Parcelable
 {
+    private int id;
     private String originalTitle;
     private String posterPath;
     private String synopsis;
@@ -26,6 +27,7 @@ public class Movie implements Parcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeInt(id);
         dest.writeString(originalTitle);
         dest.writeString(posterPath);
         dest.writeString(synopsis);
@@ -59,19 +61,19 @@ public class Movie implements Parcelable
         return stringBuilder.toString();
     }
 
-    public Movie(String title, String posterPath, String synopsis, float userRating, Calendar releaseDate)
+    public Movie(int id, String title, String posterPath, String synopsis, float userRating, Calendar releaseDate)
     {
+        this.id = id;
         this.originalTitle = title;
         this.posterPath = posterPath;
         this.synopsis = synopsis;
         this.userRating = userRating;
         this.releaseDate = releaseDate;
-
-        Log.d("MOVIE", toString());
     }
 
     public Movie(Parcel in)
     {
+        this.id = in.readInt();
         this.originalTitle = in.readString();
         this.posterPath = in.readString();
         this.synopsis = in.readString();
