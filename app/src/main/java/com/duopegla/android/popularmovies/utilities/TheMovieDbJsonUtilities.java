@@ -3,6 +3,7 @@ package com.duopegla.android.popularmovies.utilities;
 import android.util.Log;
 
 import com.duopegla.android.popularmovies.Movie;
+import com.duopegla.android.popularmovies.Review;
 import com.duopegla.android.popularmovies.Trailer;
 
 import org.json.JSONArray;
@@ -36,6 +37,13 @@ public final class TheMovieDbJsonUtilities {
     private static final String TMD_TRAILER_KEY = "key";
     private static final String TMD_TRAILER_NAME = "name";
     private static final String TMD_TRAILER_SITE = "site";
+
+    private static final String TMD_REVIEW_RESULTS = "reviews";
+    private static final String TMD_REVIEW_ID = "id";
+    private static final String TMD_REVIEW_AUTHOR = "author";
+    private static final String TMD_REVIEW_CONTENT = "content";
+    private static final String TMD_REVIEW_URL = "url";
+
 
     public static Movie getMovieFromJson(JSONObject movieJson)
     {
@@ -152,6 +160,51 @@ public final class TheMovieDbJsonUtilities {
         catch (JSONException e)
         {
             Log.d(TAG, "Error parsing trailers JSON");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Review getReviewFromJson(JSONObject reviewJson)
+    {
+        try
+        {
+            String id = reviewJson.getString(TMD_REVIEW_ID);
+            String author = reviewJson.getString(TMD_REVIEW_AUTHOR);
+            String content = reviewJson.getString(TMD_REVIEW_CONTENT);
+            String url = reviewJson.getString(TMD_REVIEW_URL);
+
+            return new Review(id, author, content, url);
+        }
+        catch (JSONException e)
+        {
+            Log.d(TAG, "Error parsing review JSON");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Review[] getReviewsFromJson(String json)
+    {
+        try
+        {
+            JSONObject reviewJson = new JSONObject(json);
+
+            JSONArray reviewJsonArray = reviewJson.getJSONArray(TMD_TRAILER_RESULTS);
+            Review[] resultReviews = new Review[reviewJsonArray.length()];
+
+            for (int i = 0; i < resultReviews.length; i++)
+            {
+                resultReviews[i] = getReviewFromJson(reviewJsonArray.getJSONObject(i));
+            }
+
+            return resultReviews;
+        }
+        catch (JSONException e)
+        {
+            Log.d(TAG, "Error parsing reviews JSON");
             e.printStackTrace();
         }
 

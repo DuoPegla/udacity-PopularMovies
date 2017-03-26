@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_person_outline_black_48dp"
+            android:padding="5dp"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/tv_review_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Movie Queen41"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_review_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="There may be some fine performances in this movie, but I honestly think the critics overrated this latest entry in the X-Men saga. The performances of Wolverine and Prof. X by Hugh Jackman and Patrick Stewart are extraordinary. They create a believable and loving father-son bond between their characters, with Logan caring for the ninety year old leader of the X-Men after a horrible event occurs at the Xavier school the year before. Stephen Merchant takes over the role of Caliban from Tómas Lemarquis, who played the character in X-Men Apocalypse, and transforms him into an ally to Logan and Charlies. Merchant is quite good in the role. But what really dragged down the movie is its nihilism. The other X-Men are completely missing from the film and mutants have been wiped out almost completely. A sense of doom and hopelessness looms over the film. This movie completely upends the warm and hopeful epilogue of Days of Future Past, where the X-Men were restored to life and glory and mutants weren't extinct after all. Death seems to stalk Logan and Charles wherever they go. There is also a conspicuous lack of significant female characters in this movie, too. The only female of note is Laura/ X-23, and she spends most of the film mute. There is also a complete lack of any strong or memorable villains. No one ever reaches the level of greatness like other X-Men villains such as Magneto or William Stryker. So, despite some good performances, this film is a bit overrated and also a little too bleak and depressing for my taste."
+            android:textSize="18sp"
+            android:padding="20dp"
+            android:layout_gravity="center"
+            />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+</LinearLayout>

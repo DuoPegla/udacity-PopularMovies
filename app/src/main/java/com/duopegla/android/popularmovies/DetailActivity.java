@@ -38,6 +38,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     private RecyclerView mMovieDetailTrailers;
     private TrailerAdapter mTrailerAdapter;
 
+    private RecyclerView mMovieDetailReviews;
+    private ReviewAdapter mReviewAdapter;
+
     public class FetchMovieTrailerTask extends AsyncTask<URL, Void, Trailer[]>
     {
         @Override
@@ -72,6 +75,41 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         }
     }
 
+    public class FetchMoviewReviewTask extends AsyncTask<URL, Void, Review[]>
+    {
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Review[] doInBackground(URL... params)
+        {
+            if (params.length == 0)
+                return null;
+
+            try
+            {
+                String reviewJson = NetworkUtilities.getResponseFromHttpUrl(params[0]);
+                return TheMovieDbJsonUtilities.getReviewsFromJson(reviewJson);
+            }
+            catch (IOException e)
+            {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Review[] reviews)
+        {
+            if (reviews == null)
+                return;
+
+            mReviewAdapter.setReviewData(reviews);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -85,14 +123,19 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mMovieDetailSynopsis = (TextView) findViewById(R.id.tv_detail_synopsis);
 
         mMovieDetailTrailers = (RecyclerView) findViewById(R.id.recyclerview_trailers);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mMovieDetailTrailers.setLayoutManager(layoutManager);
+        LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mMovieDetailTrailers.setLayoutManager(trailerLayoutManager);
         mMovieDetailTrailers.setHasFixedSize(false);
-
         mTrailerAdapter = new TrailerAdapter(this);
         mMovieDetailTrailers.setAdapter(mTrailerAdapter);
 
+
+        mMovieDetailReviews = (RecyclerView) findViewById(R.id.recyclerview_reviews);
+        LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mMovieDetailReviews.setLayoutManager(reviewLayoutManager);
+        mMovieDetailReviews.setHasFixedSize(false);
+        mReviewAdapter = new ReviewAdapter();
+        mMovieDetailReviews.setAdapter(mReviewAdapter);
 
         Intent parentIntent = getIntent();
         if (parentIntent != null && parentIntent.hasExtra(MainActivity.INTENT_EXTRA_KEY))
@@ -105,8 +148,11 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             mMovieDetailSynopsis.setText(mMovie.getSynopsis());
 
             String apiKey = getString(R.string.themoviedb_api_key);
-            URL request = NetworkUtilities.buildTrailerRequestUrl(apiKey, mMovie.getId());
-            new FetchMovieTrailerTask().execute(request);
+            URL trailerRequest = NetworkUtilities.buildTrailerRequestUrl(apiKey, mMovie.getId());
+            new FetchMovieTrailerTask().execute(trailerRequest);
+
+            URL reviewRequest = NetworkUtilities.buildReviewRequestUrl(apiKey, mMovie.getId());
+            new FetchMoviewReviewTask().execute(reviewRequest);
         }
     }
 

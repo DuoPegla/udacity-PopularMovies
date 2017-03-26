@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/white"
-            android:padding="20dp">
+            android:padding="5dp">
 
 
             <LinearLayout
@@ -87,6 +87,19 @@
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerview_trailers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/text_view_review"
+                android:textSize="22sp"
+                android:padding="10dp"
+                android:textColor="@color/black"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_reviews"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
