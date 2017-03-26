@@ -2,6 +2,7 @@ package com.duopegla.android.popularmovies;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -64,6 +65,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position)
     {
+        Log.d("MOVIE ADAPTER", "Refresh " + String.valueOf(position));
         Movie movie = mMovieData[position];
         Picasso.with(holder.mMoviePosterImageView.getContext()).
                 load(NetworkUtilities.buildPosterRequestUrl(movie.getPosterPath()).toString()).

@@ -3,6 +3,8 @@ package com.duopegla.android.popularmovies.utilities;
 import android.net.Uri;
 import android.util.Log;
 
+import com.duopegla.android.popularmovies.Trailer;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -37,6 +39,10 @@ public final class NetworkUtilities
     private static final String TMD_POSTER_AUTHORITY = "image.tmdb.org";
     private static final String TMD_POSTER_PATH = "t/p";
     private static final String TMD_POSTER_WIDTH = "w500"; // can be: "w92", "w154", "w185", "w342", "w500", "w780", or "original"
+
+    private static final String YOUTUBE_AUTHORITY = "www.youtube.com";
+    private static final String YOUTUBE_API_CATEGORY = "watch";
+    private static final String YOUTUBE_VIDEO_PARAM = "v";
 
     private static final String format = "json";
 
@@ -134,6 +140,33 @@ public final class NetworkUtilities
                 .appendPath(String.valueOf(movieId))
                 .appendPath(TMD_REVIEW_PATH)
                 .appendQueryParameter(TMD_API_KEY_PARAM, apiKey);
+
+        uriBuilder.build();
+
+        try
+        {
+            URL builtUrl = new URL(uriBuilder.toString());
+            return builtUrl;
+        }
+        catch (MalformedURLException e)
+        {
+            Log.d(TAG, "Unable to build request URL " + uriBuilder.toString());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static URL buildYouTubeTrailerUrl(Trailer trailer)
+    {
+        if (!trailer.isYouTubeTrailer())
+            return null;
+
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme(SCHEME)
+                .authority(YOUTUBE_AUTHORITY)
+                .appendPath(YOUTUBE_API_CATEGORY)
+                .appendQueryParameter(YOUTUBE_VIDEO_PARAM, trailer.getKey());
 
         uriBuilder.build();
 

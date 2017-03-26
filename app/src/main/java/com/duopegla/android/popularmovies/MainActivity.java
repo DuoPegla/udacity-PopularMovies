@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private NetworkUtilities.MovieResultSort movieResultSortMethod;
 
     public final int NUMBER_OF_COLUMNS = 2;
+    public static final String INTENT_EXTRA_KEY = "movie";
 
     public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
@@ -150,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Context context = this;
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra("movie", movie);
+        intentToStartDetailActivity.putExtra(INTENT_EXTRA_KEY, movie);
         startActivity(intentToStartDetailActivity);
     }
 

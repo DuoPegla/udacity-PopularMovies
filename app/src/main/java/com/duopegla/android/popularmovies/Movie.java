@@ -82,6 +82,11 @@ public class Movie implements Parcelable
         this.releaseDate.setTimeInMillis(in.readLong());
     }
 
+    public int getId()
+    {
+        return this.id;
+    }
+
     public String getPosterPath()
     {
         return this.posterPath;

@@ -18,7 +18,7 @@
                 android:id="@+id/tv_detail_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:text="Chappie"
                 android:textColor="@color/black"
                 android:padding="30dp"/>
@@ -30,7 +30,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/white"
-            android:weightSum="1"
             android:padding="20dp">
 
 
@@ -43,7 +42,8 @@
                     android:id="@+id/iv_detail_poster"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="0dp"/>
+                    android:padding="0dp"
+                    android:src="@mipmap/ic_launcher"/>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -56,14 +56,16 @@
                         android:id="@+id/tv_detail_release_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="40sp"/>
+                        android:textSize="40sp"
+                        android:text="2017"/>
 
                     <TextView
                         android:id="@+id/tv_detail_user_rating"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="25sp"
-                        android:textColor="@color/black"/>
+                        android:textColor="@color/black"
+                        android:text="7.5/10"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -71,16 +73,22 @@
                 android:id="@+id/tv_detail_synopsis"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
                 android:textSize="18sp"/>
 
-            <ListView
-                android:id="@+id/detail_trailers"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/text_view_trailer"
+                android:textSize="22sp"
+                android:padding="10dp"
+                android:textColor="@color/black"/>
 
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_trailers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
     </LinearLayout>

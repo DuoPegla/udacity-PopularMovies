@@ -3,6 +3,7 @@ package com.duopegla.android.popularmovies.utilities;
 import android.util.Log;
 
 import com.duopegla.android.popularmovies.Movie;
+import com.duopegla.android.popularmovies.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +30,12 @@ public final class TheMovieDbJsonUtilities {
     private static final String TMD_SYNOPSIS = "overview";
     private static final String TMD_USER_RATING = "vote_average";
     private static final String TMD_RELEASE_DATE = "release_date";
+
+    private static final String TMD_TRAILER_RESULTS = "results";
+    private static final String TMD_TRAILER_ID = "id";
+    private static final String TMD_TRAILER_KEY = "key";
+    private static final String TMD_TRAILER_NAME = "name";
+    private static final String TMD_TRAILER_SITE = "site";
 
     public static Movie getMovieFromJson(JSONObject movieJson)
     {
@@ -100,6 +107,51 @@ public final class TheMovieDbJsonUtilities {
         catch (JSONException e)
         {
             Log.d(TAG, "Error parsing movies JSON");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Trailer getTrailerFromJson(JSONObject trailerJson)
+    {
+        try
+        {
+            String id = trailerJson.getString(TMD_TRAILER_ID);
+            String key = trailerJson.getString(TMD_TRAILER_KEY);
+            String name = trailerJson.getString(TMD_TRAILER_NAME);
+            String site = trailerJson.getString(TMD_TRAILER_SITE);
+
+            return new Trailer(id, key, name, site);
+        }
+        catch (JSONException e)
+        {
+            Log.d(TAG, "Error parsing trailer JSON");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Trailer[] getTrailersFromJson(String json)
+    {
+        try
+        {
+            JSONObject trailerJson = new JSONObject(json);
+
+            JSONArray trailerJsonArray = trailerJson.getJSONArray(TMD_TRAILER_RESULTS);
+            Trailer[] resultTrailers = new Trailer[trailerJsonArray.length()];
+
+            for (int i = 0; i < resultTrailers.length; i++)
+            {
+                resultTrailers[i] = getTrailerFromJson(trailerJsonArray.getJSONObject(i));
+            }
+
+            return resultTrailers;
+        }
+        catch (JSONException e)
+        {
+            Log.d(TAG, "Error parsing trailers JSON");
             e.printStackTrace();
         }
 
