@@ -18,6 +18,7 @@ public class Movie implements Parcelable
     private String synopsis;
     private float userRating;
     private Calendar releaseDate;
+    private boolean isFavorite;
 
     @Override
     public int describeContents() {
@@ -33,6 +34,7 @@ public class Movie implements Parcelable
         dest.writeString(synopsis);
         dest.writeFloat(userRating);
         dest.writeLong(releaseDate.getTimeInMillis());
+        dest.writeByte((byte) (isFavorite ? 1 : 0));
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -80,6 +82,7 @@ public class Movie implements Parcelable
         this.userRating = in.readFloat();
         this.releaseDate = Calendar.getInstance();
         this.releaseDate.setTimeInMillis(in.readLong());
+        this.isFavorite = in.readByte() != 0;
     }
 
     public int getId()
@@ -110,5 +113,15 @@ public class Movie implements Parcelable
     public Calendar getReleaseDate()
     {
         return this.releaseDate;
+    }
+
+    public void setIsFavorite(boolean isFavorite)
+    {
+        this.isFavorite = isFavorite;
+    }
+
+    public boolean getIsFavorite()
+    {
+        return this.isFavorite;
     }
 }

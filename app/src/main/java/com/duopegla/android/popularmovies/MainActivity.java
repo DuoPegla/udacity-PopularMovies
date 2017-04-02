@@ -2,7 +2,11 @@ package com.duopegla.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,13 +20,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import com.duopegla.android.popularmovies.data.FavouriteMovieContract;
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
 
 import java.io.IOException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements
+        MovieAdapter.MovieAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<Cursor>
+{
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
@@ -33,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     public final int NUMBER_OF_COLUMNS = 2;
     public static final String INTENT_EXTRA_KEY = "movie";
+
+    private static final int FAVORITE_MOVIE_LOADER_ID = 0;
 
     public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
     {
@@ -71,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             {
                 showMovieDataView();
                 mMovieAdapter.setMovieData(movies);
+                getSupportLoaderManager().initLoader(FAVORITE_MOVIE_LOADER_ID, null, MainActivity.this);
             }
             else
             {
@@ -146,13 +158,71 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     @Override
-    public void onClick(Movie movie) {
-        //Toast.makeText(this, "Clicked on movie " + movie.toString(), Toast.LENGTH_LONG).show();
+    public void onClick(Movie movie)
+    {
         Context context = this;
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
         intentToStartDetailActivity.putExtra(INTENT_EXTRA_KEY, movie);
         startActivity(intentToStartDetailActivity);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args)
+    {
+        return new AsyncTaskLoader<Cursor>(this)
+        {
+            Cursor mFavoriteMovieData = null;
+
+            @Override
+            protected void onStartLoading()
+            {
+                if (mFavoriteMovieData != null)
+                {
+                    deliverResult(mFavoriteMovieData);
+                }
+                else
+                {
+                    forceLoad();
+                }
+            }
+
+            @Override
+            public Cursor loadInBackground()
+            {
+                try
+                {
+                    return getContentResolver().query(FavouriteMovieContract.MovieEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null);
+                }
+                catch (Exception e)
+                {
+                    Log.e("DB", "Failed to asynchronously load data.");
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            public void deliverResult(Cursor data)
+            {
+                mFavoriteMovieData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data)
+    {
+        mMovieAdapter.setMovieFavorites(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
     private void loadMovieData(NetworkUtilities.MovieResultSort sortBy)

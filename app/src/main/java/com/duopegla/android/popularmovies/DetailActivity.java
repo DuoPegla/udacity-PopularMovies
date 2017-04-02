@@ -1,17 +1,23 @@
 package com.duopegla.android.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.duopegla.android.popularmovies.data.FavouriteMovieContract;
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
 import com.squareup.picasso.Picasso;
@@ -40,6 +46,8 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     private RecyclerView mMovieDetailReviews;
     private ReviewAdapter mReviewAdapter;
+
+    private ImageButton mFavoriteMovieButton;
 
     public class FetchMovieTrailerTask extends AsyncTask<URL, Void, Trailer[]>
     {
@@ -129,13 +137,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mTrailerAdapter = new TrailerAdapter(this);
         mMovieDetailTrailers.setAdapter(mTrailerAdapter);
 
-
         mMovieDetailReviews = (RecyclerView) findViewById(R.id.recyclerview_reviews);
         LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mMovieDetailReviews.setLayoutManager(reviewLayoutManager);
         mMovieDetailReviews.setHasFixedSize(false);
         mReviewAdapter = new ReviewAdapter();
         mMovieDetailReviews.setAdapter(mReviewAdapter);
+
+        mFavoriteMovieButton = (ImageButton) findViewById(R.id.action_favorite);
 
         Intent parentIntent = getIntent();
         if (parentIntent != null && parentIntent.hasExtra(MainActivity.INTENT_EXTRA_KEY))
@@ -153,6 +162,15 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
             URL reviewRequest = NetworkUtilities.buildReviewRequestUrl(apiKey, mMovie.getId());
             new FetchMoviewReviewTask().execute(reviewRequest);
+
+            if (mMovie.getIsFavorite())
+            {
+                mFavoriteMovieButton.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), R.drawable.ic_star_black_48dp));
+            }
+            else
+            {
+                mFavoriteMovieButton.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), R.drawable.ic_star_border_black_48dp));
+            }
         }
     }
 
@@ -171,6 +189,41 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         if (intent.resolveActivity(getPackageManager()) != null)
         {
             startActivity(intent);
+        }
+    }
+
+    public void onClickFavourite(View view)
+    {
+        ImageButton button = (ImageButton) view;
+        if (mMovie.getIsFavorite())
+        {
+            mMovie.setIsFavorite(false);
+            button.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), R.drawable.ic_star_border_black_48dp));
+            Toast.makeText(this, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+
+            Uri uri = FavouriteMovieContract.MovieEntry.CONTENT_URI;
+            uri = uri.buildUpon().appendPath(Integer.toString(mMovie.getId())).build();
+
+            Log.d("DELETE_URI", uri.toString());
+
+            getContentResolver().delete(uri, null, null);
+        }
+        else
+        {
+            mMovie.setIsFavorite(true);
+            button.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), R.drawable.ic_star_black_48dp));
+            Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(FavouriteMovieContract.MovieEntry.COLUMN_TMDB_ID, mMovie.getId());
+            contentValues.put(FavouriteMovieContract.MovieEntry.COLUMN_TITLE, mMovie.getOriginalTitle());
+
+            Uri uri = getContentResolver().insert(FavouriteMovieContract.MovieEntry.CONTENT_URI, contentValues);
+
+            if (uri != null)
+            {
+                Log.d("DB", uri.toString());
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.duopegla.android.popularmovies;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.duopegla.android.popularmovies.data.FavouriteMovieContract;
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.squareup.picasso.Picasso;
 
@@ -65,7 +67,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position)
     {
-        Log.d("MOVIE ADAPTER", "Refresh " + String.valueOf(position));
         Movie movie = mMovieData[position];
         Picasso.with(holder.mMoviePosterImageView.getContext()).
                 load(NetworkUtilities.buildPosterRequestUrl(movie.getPosterPath()).toString()).
@@ -85,5 +86,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     {
         mMovieData = movieData;
         notifyDataSetChanged();
+    }
+
+    public void setMovieFavorites(Cursor movieFavorites)
+    {
+        if (movieFavorites == null || movieFavorites.getCount() == 0)
+            return;
+
+        while (movieFavorites.moveToNext())
+        {
+            int tmdbId = movieFavorites.getInt(movieFavorites.getColumnIndex(FavouriteMovieContract.MovieEntry.COLUMN_TMDB_ID));
+            for (Movie m : mMovieData)
+            {
+                if (tmdbId == m.getId())
+                {
+                    m.setIsFavorite(true);
+                    Log.d("MOVIE", "Movie with id " + m.getId() + " is favorite.");
+                    break;
+                }
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".MainActivity"
             android:label="PopularMovies">
@@ -18,6 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".DetailActivity"
             android:parentActivityName=".MainActivity">
@@ -25,6 +27,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity"/>
         </activity>
+
+        <provider
+            android:authorities="com.duopegla.android.popularmovies"
+            android:name="com.duopegla.android.popularmovies.data.FavouriteMovieContentProvider"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
