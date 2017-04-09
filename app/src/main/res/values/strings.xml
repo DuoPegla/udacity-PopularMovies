@@ -4,6 +4,7 @@
     <string name="action_sort">Sort</string>
     <string name="action_sort_top_rated">Top Rated</string>
     <string name="action_sort_most_popular">Most Popular</string>
+    <string name="action_sort_favorite">Favorites</string>
     <string name="error_message_default">An error has occured. Please try again by clicking refresh.</string>
     <string name="text_view_trailer">Trailers</string>
     <string name="text_view_review">Reviews</string>

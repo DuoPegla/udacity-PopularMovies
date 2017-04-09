@@ -38,7 +38,7 @@ public final class TheMovieDbJsonUtilities {
     private static final String TMD_TRAILER_NAME = "name";
     private static final String TMD_TRAILER_SITE = "site";
 
-    private static final String TMD_REVIEW_RESULTS = "reviews";
+    private static final String TMD_REVIEW_RESULTS = "results";
     private static final String TMD_REVIEW_ID = "id";
     private static final String TMD_REVIEW_AUTHOR = "author";
     private static final String TMD_REVIEW_CONTENT = "content";
@@ -192,7 +192,7 @@ public final class TheMovieDbJsonUtilities {
         {
             JSONObject reviewJson = new JSONObject(json);
 
-            JSONArray reviewJsonArray = reviewJson.getJSONArray(TMD_TRAILER_RESULTS);
+            JSONArray reviewJsonArray = reviewJson.getJSONArray(TMD_REVIEW_RESULTS);
             Review[] resultReviews = new Review[reviewJsonArray.length()];
 
             for (int i = 0; i < resultReviews.length; i++)

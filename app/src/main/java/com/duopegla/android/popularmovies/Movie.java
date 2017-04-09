@@ -82,8 +82,6 @@ public class Movie implements Parcelable
         this.synopsis = synopsis;
         this.userRating = userRating;
         this.releaseDate = releaseDate;
-
-        Log.d("MOVIE", toString());
     }
 
     public Movie(Parcel in)
@@ -114,8 +112,6 @@ public class Movie implements Parcelable
         this.isPopular = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IS_MOST_POPULAR)) == 1;
         this.isTopRated = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IS_TOP_RATED)) == 1;
         this.isFavorite = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IS_FAVORITE)) == 1;
-
-        Log.d("MOVIE_FROM_CURSOR", toString());
     }
 
     public int getId()

@@ -62,17 +62,16 @@ public class MoviesSyncTask
 
                     movie.setIsPopular(true);
                     movie.setIsTopRated(false);
-                    ContentValues movieContentValues = movie.getContentValues();
                     // If the movie is already in db update it
                     if (existingMovieFromDb.getCount() != 0)
                     {
                         movie.setIsFavorite(true);
-                        context.getContentResolver().update(movieWithIdUri, movieContentValues, null, null);
+                        context.getContentResolver().update(movieWithIdUri, movie.getContentValues(), null, null);
                     }
                     // else insert
                     else
                     {
-                        context.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
+                        context.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, movie.getContentValues());
                     }
                 }
             }
@@ -107,6 +106,8 @@ public class MoviesSyncTask
                     }
                     else
                     {
+                        movie.setIsTopRated(true);
+                        movie.setIsPopular(false);
                         movieContentValues = movie.getContentValues();
                         context.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
                     }

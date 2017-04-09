@@ -46,11 +46,13 @@ public class MainActivity extends AppCompatActivity implements
 
     public final int NUMBER_OF_COLUMNS = 2;
     public static final String INTENT_EXTRA_KEY = "movie";
+    public final String BUNDLE_STATE_SORT = "sort_method";
 
     private static final int MOVIE_LOADER_ID = 22;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -69,13 +71,27 @@ public class MainActivity extends AppCompatActivity implements
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
+        if (savedInstanceState != null && savedInstanceState.containsKey(BUNDLE_STATE_SORT))
+        {
+            movieResultSortMethod = (NetworkUtilities.MovieResultSort) savedInstanceState.get(BUNDLE_STATE_SORT);
+        }
+        else
+        {
+            movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
+        }
 
         showLoading();
 
         getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
 
         MoviesSyncUtils.initialize(this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(BUNDLE_STATE_SORT, movieResultSortMethod);
     }
 
     @Override
@@ -121,6 +137,14 @@ public class MainActivity extends AppCompatActivity implements
             return true;
         }
 
+        if (selectedId == R.id.action_sort_favorite)
+        {
+            movieResultSortMethod = NetworkUtilities.MovieResultSort.FAVORITE;
+            mMovieAdapter.swapCursor(null);
+            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+            showLoading();
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -145,15 +169,15 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (movieResultSortMethod == NetworkUtilities.MovieResultSort.MOST_POPULAR)
                 {
-                    selection = MovieContract.MovieEntry.COLUMN_IS_MOST_POPULAR + "= 1";
+                    selection = MovieContract.MovieEntry.COLUMN_IS_MOST_POPULAR + "=1";
                 }
                 else if (movieResultSortMethod == NetworkUtilities.MovieResultSort.TOP_RATED)
                 {
-                    selection = MovieContract.MovieEntry.COLUMN_IS_TOP_RATED + "= 1";
+                    selection = MovieContract.MovieEntry.COLUMN_IS_TOP_RATED + "=1";
                 }
                 else
                 {
-                    selection = MovieContract.MovieEntry.COLUMN_IS_FAVORITE + "= 1";
+                    selection = MovieContract.MovieEntry.COLUMN_IS_FAVORITE + "=1";
                 }
 
                 return new CursorLoader(this,
