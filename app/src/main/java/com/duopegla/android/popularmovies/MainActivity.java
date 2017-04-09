@@ -3,9 +3,11 @@ package com.duopegla.android.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,10 +20,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
-import com.duopegla.android.popularmovies.data.FavouriteMovieContract;
+import com.duopegla.android.popularmovies.data.MovieContract;
+import com.duopegla.android.popularmovies.sync.MoviesSyncUtils;
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
 
@@ -32,8 +34,10 @@ public class MainActivity extends AppCompatActivity implements
         MovieAdapter.MovieAdapterOnClickHandler,
         LoaderManager.LoaderCallbacks<Cursor>
 {
+    private final String TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView mRecyclerView;
+    private int mRecyclerViewPosition = RecyclerView.NO_POSITION;
     private MovieAdapter mMovieAdapter;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
@@ -43,53 +47,7 @@ public class MainActivity extends AppCompatActivity implements
     public final int NUMBER_OF_COLUMNS = 2;
     public static final String INTENT_EXTRA_KEY = "movie";
 
-    private static final int FAVORITE_MOVIE_LOADER_ID = 0;
-
-    public class FetchMovieDataTask extends AsyncTask<URL, Void, Movie[]>
-    {
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Movie[] doInBackground(URL... params) {
-
-            if (params.length == 0)
-            {
-                return null;
-            }
-
-            try
-            {
-                String moviesJson = NetworkUtilities.getResponseFromHttpUrl(params[0]);
-                return TheMovieDbJsonUtilities.getMoviesFromJson(moviesJson);
-            }
-            catch (IOException e)
-            {
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Movie movies[]) {
-
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-
-            if (movies != null)
-            {
-                showMovieDataView();
-                mMovieAdapter.setMovieData(movies);
-                getSupportLoaderManager().initLoader(FAVORITE_MOVIE_LOADER_ID, null, MainActivity.this);
-            }
-            else
-            {
-                showErrorMessage();
-            }
-        }
-    }
+    private static final int MOVIE_LOADER_ID = 22;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mRecyclerView.setHasFixedSize(true);
 
-        mMovieAdapter = new MovieAdapter(this);
+        mMovieAdapter = new MovieAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
@@ -112,7 +70,12 @@ public class MainActivity extends AppCompatActivity implements
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
-        loadMovieData(movieResultSortMethod);
+
+        showLoading();
+
+        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
+
+        MoviesSyncUtils.initialize(this);
     }
 
     @Override
@@ -130,26 +93,30 @@ public class MainActivity extends AppCompatActivity implements
 
         if (selectedId == R.id.action_refresh)
         {
-            mMovieAdapter.setMovieData(null);
-            loadMovieData(movieResultSortMethod);
+            MoviesSyncUtils.startImmediateSync(this);
+            mMovieAdapter.swapCursor(null);
+            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+            showLoading();
 
             return true;
         }
 
         if (selectedId == R.id.action_sort_most_popular)
         {
-            mMovieAdapter.setMovieData(null);
             movieResultSortMethod = NetworkUtilities.MovieResultSort.MOST_POPULAR;
-            loadMovieData(movieResultSortMethod);
+            mMovieAdapter.swapCursor(null);
+            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+            showLoading();
 
             return true;
         }
 
         if (selectedId == R.id.action_sort_top_rated)
         {
-            mMovieAdapter.setMovieData(null);
             movieResultSortMethod = NetworkUtilities.MovieResultSort.TOP_RATED;
-            loadMovieData(movieResultSortMethod);
+            mMovieAdapter.swapCursor(null);
+            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
+            showLoading();
 
             return true;
         }
@@ -170,79 +137,64 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args)
     {
-        return new AsyncTaskLoader<Cursor>(this)
+        switch (id)
         {
-            Cursor mFavoriteMovieData = null;
+            case MOVIE_LOADER_ID:
+                Uri movieQueryUri = MovieContract.MovieEntry.CONTENT_URI;
+                String selection;
 
-            @Override
-            protected void onStartLoading()
-            {
-                if (mFavoriteMovieData != null)
+                if (movieResultSortMethod == NetworkUtilities.MovieResultSort.MOST_POPULAR)
                 {
-                    deliverResult(mFavoriteMovieData);
+                    selection = MovieContract.MovieEntry.COLUMN_IS_MOST_POPULAR + "= 1";
+                }
+                else if (movieResultSortMethod == NetworkUtilities.MovieResultSort.TOP_RATED)
+                {
+                    selection = MovieContract.MovieEntry.COLUMN_IS_TOP_RATED + "= 1";
                 }
                 else
                 {
-                    forceLoad();
+                    selection = MovieContract.MovieEntry.COLUMN_IS_FAVORITE + "= 1";
                 }
-            }
 
-            @Override
-            public Cursor loadInBackground()
-            {
-                try
-                {
-                    return getContentResolver().query(FavouriteMovieContract.MovieEntry.CONTENT_URI,
-                            null,
-                            null,
-                            null,
-                            null);
-                }
-                catch (Exception e)
-                {
-                    Log.e("DB", "Failed to asynchronously load data.");
-                    e.printStackTrace();
-                    return null;
-                }
-            }
+                return new CursorLoader(this,
+                        movieQueryUri,
+                        null,
+                        selection,
+                        null,
+                        null);
 
-            public void deliverResult(Cursor data)
-            {
-                mFavoriteMovieData = data;
-                super.deliverResult(data);
-            }
-        };
+            default:
+                throw new RuntimeException("Loader Not Implemented: " + id);
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data)
     {
-        mMovieAdapter.setMovieFavorites(data);
+        mMovieAdapter.swapCursor(data);
+        if (mRecyclerViewPosition == RecyclerView.NO_POSITION)
+            mRecyclerViewPosition = 0;
+
+        mRecyclerView.smoothScrollToPosition(mRecyclerViewPosition);
+        if (data.getCount() != 0)
+            showMovieDataView();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
-    private void loadMovieData(NetworkUtilities.MovieResultSort sortBy)
+    public void onLoaderReset(Loader<Cursor> loader)
     {
-        showMovieDataView();
-
-        String apiKey = getResources().getString(R.string.themoviedb_api_key);
-        URL request = NetworkUtilities.buildRequestUrl(apiKey, sortBy);
-        new FetchMovieDataTask().execute(request);
+        mMovieAdapter.swapCursor(null);
     }
 
     private void showMovieDataView()
     {
-        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
-    private void showErrorMessage()
+    private void showLoading()
     {
         mRecyclerView.setVisibility(View.INVISIBLE);
-        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+        mLoadingIndicator.setVisibility(View.VISIBLE);
     }
 }

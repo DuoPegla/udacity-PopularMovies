@@ -29,9 +29,22 @@
         </activity>
 
         <provider
+            android:name=".data.MovieContentProvider"
             android:authorities="com.duopegla.android.popularmovies"
-            android:name="com.duopegla.android.popularmovies.data.FavouriteMovieContentProvider"
             android:exported="false"/>
+
+        <service
+            android:name=".sync.MoviesSyncIntentService"
+            android:exported="false"/>
+
+        <service
+            android:name=".sync.MoviesFirebaseJobService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
+
 
     </application>
 

@@ -1,7 +1,6 @@
 package com.duopegla.android.popularmovies;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -17,13 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.duopegla.android.popularmovies.data.FavouriteMovieContract;
+import com.duopegla.android.popularmovies.data.MovieContract;
 import com.duopegla.android.popularmovies.utilities.NetworkUtilities;
 import com.duopegla.android.popularmovies.utilities.TheMovieDbJsonUtilities;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 
@@ -201,12 +199,12 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             button.setImageDrawable(ContextCompat.getDrawable(getBaseContext(), R.drawable.ic_star_border_black_48dp));
             Toast.makeText(this, "Removed from Favourites", Toast.LENGTH_SHORT).show();
 
-            Uri uri = FavouriteMovieContract.MovieEntry.CONTENT_URI;
+            Uri uri = MovieContract.MovieEntry.CONTENT_URI;
             uri = uri.buildUpon().appendPath(Integer.toString(mMovie.getId())).build();
 
-            Log.d("DELETE_URI", uri.toString());
+            Log.d("REMOVE_FAVORITE_URI", uri.toString());
 
-            getContentResolver().delete(uri, null, null);
+            getContentResolver().update(uri, mMovie.getContentValues(), null, null);
         }
         else
         {
@@ -215,15 +213,13 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
 
             ContentValues contentValues = new ContentValues();
-            contentValues.put(FavouriteMovieContract.MovieEntry.COLUMN_TMDB_ID, mMovie.getId());
-            contentValues.put(FavouriteMovieContract.MovieEntry.COLUMN_TITLE, mMovie.getOriginalTitle());
+            contentValues.put(MovieContract.MovieEntry.COLUMN_TMDB_ID, mMovie.getId());
+            contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mMovie.getOriginalTitle());
 
-            Uri uri = getContentResolver().insert(FavouriteMovieContract.MovieEntry.CONTENT_URI, contentValues);
+            Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+            uri = uri.buildUpon().appendPath(Integer.toString(mMovie.getId())).build();
 
-            if (uri != null)
-            {
-                Log.d("DB", uri.toString());
-            }
+            getContentResolver().update(uri, mMovie.getContentValues(), null, null);
         }
     }
 }

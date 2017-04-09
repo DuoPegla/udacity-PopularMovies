@@ -55,7 +55,7 @@ public final class TheMovieDbJsonUtilities {
             String synopsis = movieJson.getString(TMD_SYNOPSIS);
             float userRating = (float) movieJson.getDouble(TMD_USER_RATING);
             Calendar releaseDate = Calendar.getInstance();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-dd-MM", Locale.ENGLISH);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
             try
             {

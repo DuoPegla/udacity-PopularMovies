@@ -20,7 +20,7 @@ public final class NetworkUtilities
 {
     public enum MovieResultSort
     {
-        MOST_POPULAR, TOP_RATED
+        MOST_POPULAR, TOP_RATED, FAVORITE
     }
 
     private static final String TAG = NetworkUtilities.class.getSimpleName();
